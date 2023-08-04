@@ -1,8 +1,12 @@
 <template>
 	<view class="bg">
-		<scroll-view scroll-with-animation:true :scroll-y="isScroll" style="width: 100%;" :scroll-into-view="intoindex">
+				<!-- 预设文本 -->
+		<view class="drawer-title" v-if="msgList.length<=0">
+				欢迎来到小熊智答（GTP3.5）
+		</view>
+		<scroll-view scroll-with-animation :scroll-y="true" style="width: 100%;height: 90%;" :scroll-into-view="intoindex"> 
 			<!-- 消息 -->
-			<view scroll-with-animation>
+			<view scroll-with-animation id="messageContainer">
 				<view class="flex-column-start" v-for="(o,i) in msgList" :key="i" :id="'text'+i">
 					<!-- 用户提问-->
 					<view v-if="o.my" class="userinfo">
@@ -29,14 +33,13 @@
 					</view>
 				</view>
 				<!-- 防止消息底部被遮 -->
-				<view style="height: 180rpx;">
-				</view>
+				<!-- <view style="height: 180rpx;" id="seanTest">
+				</view> -->
 			</view>
-		</scroll-view>
+	    </scroll-view> 
 		<!-- 底部导航栏 -->
 		<view class="flex-column-center">
 			<view class="inpubut">
-				<uni-icons type="settings-filled" color="#fff" size="25" @click="showDrawer" class="ml-10"></uni-icons>
 				<input v-model="msg" class="dh-input" type="text" @confirm="sendMsg" confirm-type="search"
 					placeholder-class="my-neirong-sm" placeholder="描述您的问题" @blur="isScroll=true;"
 					@focus="isScroll=false;" />
@@ -44,12 +47,6 @@
 					class="btn">发送</button>
 			</view>
 		</view>
-		<!-- 预设文本 -->
-		<uni-drawer ref="showDrawer" mode="left" :mask-click="true">
-			<view class="drawer-title">
-				欢迎来到小熊智答（GTP3.5）
-			</view>
-		</uni-drawer>
 	</view>
 </template>
 
@@ -97,7 +94,7 @@
 			this.isScroll=true;
 			this.intoindex="";
 			this.msgList=[
-				{
+				{	
 					output: '',
 					my:true,
 					msg:"1帮我写一个简单的java代码",
@@ -152,8 +149,7 @@
 					type: 'normal',
 					backSpeed: 40,
 					sentencePause: false
-				},
-				{
+				},				{
 					output: '好的，java代码如下，public static class',
 					isEnd: false,
 					speed: 80,
@@ -196,33 +192,20 @@
 					type: 'normal',
 					backSpeed: 40,
 					sentencePause: false
-				},
-				{
-					output: '好的，java代码如下，public static class',
-					isEnd: false,
-					speed: 80,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false,
-					my:false
 				}];
+				this.msgList=[];
 				this.scrollToBottom();
 		
 		},
 		methods: {
-			showDrawer(){
-				this.$refs.showDrawer.open();
-			},
 			sendMsg() {
 				this.scrollToBottom();
 			},
 			scrollToBottom() {
-				this.$nextTick(() => {
-				this.intoindex = "text" + (this.msgList.length - 1)
-				console.log("gnxin"+this.intoindex)
-				});
+				setTimeout(() => {
+					this.intoindex = 'text' + (this.msgList.length - 1);
+				}, 100);  // 延时 100 毫秒，值可以根据实际情况调整
+
  		    }
 
 		}
@@ -233,12 +216,14 @@
 	page {
 		height: 100%;
 	}
+
 	.drawer-list{
 		padding:0 20rpx;
 	}
 	.advertising {}
 
 	.drawer-title{
+		margin-top: 37%;
 		text-align: center;
 		padding: 20rpx;
 		color:  #616161;
