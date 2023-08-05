@@ -9,10 +9,10 @@
 			<view scroll-with-animation id="messageContainer">
 				<view class="flex-column-start" v-for="(o,i) in msgList" :key="i" :id="'text'+i">
 					<!-- 用户提问-->
-					<view v-if="o.my" class="userinfo">
+					<view v-if="o.role=='user'" class="userinfo">
 						<view class="flex justify-end my-info">
 							<view class="usermsg" style="max-width: 500rpx;">
-								<text style="word-break: break-all;font-size: 13px;">{{id+o.msg}}</text>
+								<text style="word-break: break-all;font-size: 13px;">{{o.content}}</text>
 							</view>
 							<view class="chat-img" style="margin-left:20rpx ;">
 								<image style="height: 80rpx;width: 80rpx;" src="../../static/avatar.png" mode="aspectFit"></image>
@@ -20,14 +20,14 @@
 						</view>
 					</view>
 					<!-- AI回复 -->
-					<view v-if="!o.my" class="aiinfo">
+					<view v-if="o.role=='assistant'" class="aiinfo">
 						<view class="chat-img ">
 							<image style="height: 80rpx;width: 80rpx;" src="../../static/chatgpt.png" mode="scaleToFill">
 							</image>
 						</view>
 						<view class="flex" style="max-width: 500rpx;">
 							<view class="aimsg" style="border-radius: 35rpx;background-color: #f9f9f9;">
-								<text style="word-break: break-all;font-size: 13px;">{{i+o.output}}</text>
+								<text style="word-break: break-all;font-size: 13px;">{{o.content}}</text>
 							</view>
 						</view>
 					</view>
@@ -40,7 +40,7 @@
 		<!-- 底部导航栏 -->
 		<view class="flex-column-center">
 			<view class="inpubut">
-				<input v-model="msg" class="dh-input" type="text" @confirm="sendMsg" confirm-type="search"
+				<input v-model="msg" class="dh-input" type="text" confirm-type="search"
 					placeholder-class="my-neirong-sm" placeholder="描述您的问题" @blur="isScroll=true;"
 					@focus="isScroll=false;" />
 				<button @click="sendMsg" :disabled="msgLoad"
@@ -52,154 +52,73 @@
 
 <script>
 	import EasyTyper from 'easy-typer-js'
+	import chat from '../../util/chat'
 	export default {
 		data() {
 			return {
 				errorMsg: '(￣ε ￣)不好意思呀~~~当前调用的人太多，服务器有点承受不过来，请稍后重试',
-				config: {
-					output: '',
-					isEnd: false,
-					speed: 100,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false
-				},
 				intoindex: '',
-				showShareBtn: true,
-				rewardedVideoAd: null, //广告
-				num: 5, //次数
-				apiurl: 'https://chatgptest-node-chatgptest-node-oozhtxrqgh.us-west-1.fcapp.run', //后端转发地址
-				api: '', //在此输入你的apikey
 				isScroll: true, //是否可以滑动
-				userAvatar: '', //头像
 				msgLoad: false,
-				isRequesting: false,
-				msgList: [{
-					output: '年轻人，我看你很迷茫。想要问些什么？',
-					isEnd: false,
-					speed: 80,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false
-				}],
-				msgContent: [],
-				msg: ""
+				msgList: [],
+				msg:""
 			}
 		},
 		onLoad() {
 			this.isScroll=true;
 			this.intoindex="";
-			this.msgList=[
-				{	
-					output: '',
-					my:true,
-					msg:"1帮我写一个简单的java代码",
-					isEnd: false,
-					speed: 80,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false
-				},
-				{
-					output: '好的，java代码如下，public static class',
-					isEnd: false,
-					speed: 80,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false,
-					my:false
-				},{
-					output: '',
-					my:true,
-					msg:"帮我写一个简单的java代码",
-					isEnd: false,
-					speed: 80,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false
-				},
-				{
-					output: '好的，java代码如下，public static class',
-					isEnd: false,
-					speed: 80,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false,
-					my:false
-				},{
-					output: '',
-					my:true,
-					msg:"帮我写一个简单的java代码",
-					isEnd: false,
-					speed: 80,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false
-				},				{
-					output: '好的，java代码如下，public static class',
-					isEnd: false,
-					speed: 80,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false,
-					my:false
-				},{
-					output: '',
-					my:true,
-					msg:"帮我写一个简单的java代码",
-					isEnd: false,
-					speed: 80,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false
-				},
-				{
-					output: '好的，java代码如下，public static class',
-					isEnd: false,
-					speed: 80,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false,
-					my:false
-				},{
-					output: '',
-					my:true,
-					msg:"帮我写一个简单的java代码",
-					isEnd: false,
-					speed: 80,
-					singleBack: false,
-					sleep: 0,
-					type: 'normal',
-					backSpeed: 40,
-					sentencePause: false
-				}];
-				this.msgList=[];
-				this.scrollToBottom();
-		
+			this.msgList=[];
+			this.msg = "";
+			this.msgLoad = false;
+			chat.getAccessToken();
+			this.scrollToBottom();
 		},
 		methods: {
 			sendMsg() {
+				if(!this.msg){
+					return;
+				}
+				var msgRequest = new Array();
+				var message = this.buildMessage(this.msg,"user");
+				this.msgList.push(message);
+				msgRequest.push(message);
+				this.msgLoad = true;
+				chat.createTextConversation(msgRequest,
+					function(){
+						chat.getConversation(this.conversationId,
+						    function(data){
+								var result = data.result;
+								var message = this.buildMessage(result,"assistant");
+								this.msgList.push(message);
+							},
+							function(err){
+								uni.showToast({
+								title:"服务异常，稍后在尝试",
+								duration:500,
+								icon:'success',
+								mask:true});
+								this.msgLoad = false;
+							});
+					},
+					function(){
+						uni.showToast({
+						title:"服务异常，稍后在尝试",
+						duration:500,
+						icon:'success',
+						mask:true});
+						this.msgLoad = false;
+					}
+					);
+
+
 				this.scrollToBottom();
+			},
+			buildMessage(messText,role){
+				var message = {
+					role:role,
+					content:messText
+   				 }
+			   return message;
 			},
 			scrollToBottom() {
 				setTimeout(() => {
@@ -315,9 +234,10 @@
 		justify-content: space-around;
 		align-items: center;
 		/* background-color: #f9f9f9; */
+		word-break: break-all;
 		width: 100%;
 		height: 110rpx;
-		font-size: 40rpx;
+		font-size: 13px;
 	}
 
 	.dh-input {
